@@ -1,0 +1,59 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model College {
+  id              String       @id @default(uuid())
+  slug            String       @unique
+  name            String
+  location        String
+  state           String
+  fees            Float
+  rating          Float
+  description     String
+  establishedYear Int          @default(2000)
+  courses         Course[]
+  reviews         Review[]
+  placement       Placement?
+  cutoffs         Cutoff[]
+  createdAt       DateTime     @default(now())
+}
+
+model Course {
+  id        String   @id @default(uuid())
+  collegeId String
+  name      String
+  duration  String
+  fees      Float
+  college   College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  collegeId String
+  rating    Float
+  text      String
+  createdAt DateTime @default(now())
+  college   College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+}
+
+model Placement {
+  id             String  @id @default(uuid())
+  collegeId      String  @unique
+  averagePackage Float
+  highestPackage Float
+  placementRate  Float
+  college        College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+}
+
+model Cutoff {
+  id        String  @id @default(uuid())
+  collegeId String
+  exam      String
+  rank      Int
+  college   College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+}
