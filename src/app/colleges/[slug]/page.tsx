@@ -129,7 +129,9 @@ export default async function CollegeDetailPage({ params }: PageProps) {
             <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-lg shadow-slate-950/20">
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Placement rate</p>
               <p className="mt-2 text-xl font-semibold text-white">
-                {college.placement ? `${college.placement.placementRate}%` : 'N/A'}
+                {college.placement?.placementRate !== undefined
+                  ? `${college.placement.placementRate}%`
+                  : 'N/A'}
               </p>
             </div>
           </div>
@@ -183,8 +185,7 @@ export default async function CollegeDetailPage({ params }: PageProps) {
             </div>
 
             <aside className="space-y-5">
-              {college.placement && (
-                <section className="rounded-3xl border border-emerald-500/20 bg-emerald-500/5 p-6 shadow-xl shadow-emerald-950/10">
+              <section className="rounded-3xl border border-emerald-500/20 bg-emerald-500/5 p-6 shadow-xl shadow-emerald-950/10">
                   <div className="mb-6 flex items-center gap-3">
                     <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500/10 text-emerald-300">
                       <BriefcaseBusiness size={17} />
@@ -195,19 +196,24 @@ export default async function CollegeDetailPage({ params }: PageProps) {
                   <dl className="space-y-4 text-sm">
                     <div className="flex justify-between gap-4 border-b border-slate-700 pb-3">
                       <dt className="text-slate-300">Average package</dt>
-                      <dd className="font-bold text-white">₹{college.placement.averagePackage} LPA</dd>
+                      <dd className="font-bold text-white">
+                        ₹{college.placement?.averagePackage ?? 'N/A'} LPA
+                      </dd>
                     </div>
                     <div className="flex justify-between gap-4 border-b border-slate-700 pb-3">
                       <dt className="text-slate-300">Highest package</dt>
-                      <dd className="font-bold text-white">₹{college.placement.highestPackage} LPA</dd>
+                      <dd className="font-bold text-white">
+                        ₹{college.placement?.highestPackage ?? 'N/A'} LPA
+                      </dd>
                     </div>
                     <div className="flex justify-between gap-4">
                       <dt className="text-slate-300">Placement rate</dt>
-                      <dd className="font-bold text-white">{college.placement.placementRate}%</dd>
+                      <dd className="font-bold text-white">
+                        {college.placement?.placementRate ?? 'N/A'}%
+                      </dd>
                     </div>
                   </dl>
-                </section>
-              )}
+              </section>
 
               {cutoffs.length > 0 && (
                 <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-xl shadow-slate-950/20">
