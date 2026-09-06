@@ -1,6 +1,7 @@
 import { ArrowLeft, BookOpen, BriefcaseBusiness, GraduationCap, MapPin, Star } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -42,19 +43,21 @@ interface CollegeRecord {
 
 export default async function CollegeDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const response = await fetch(`${baseUrl}/api/colleges/${slug}`, {
-    cache: 'no-store',
-  });
-
-  if (!response.ok) {
-    notFound();
-  }
-
-  const payload = await response.json();
-  const college = payload.data as CollegeRecord;
+  const college = (await prisma.college.findUnique({
+    where: { slug },
+    include: {
+      courses: true,
+      placement: true,
+      cutoffs: true,
+      reviews: true,
+    },
+  })) as CollegeRecord | null;
 
   if (!college) notFound();
+
+  const courses = college.courses ?? [];
+  const cutoffs = college.cutoffs ?? [];
+  const reviews = college.reviews ?? [];
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
@@ -83,7 +86,7 @@ export default async function CollegeDetailPage({ params }: PageProps) {
             <ArrowLeft size={16} /> Back to colleges
           </Link>
 
-          <section className="overflow-hidden rounded-[2rem] border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 shadow-2xl shadow-emerald-950/20">
+          <section className="overflow-hidden rounded-4xl border border-slate-800 bg-linear-to-br from-slate-900 via-slate-900 to-slate-800 shadow-2xl shadow-emerald-950/20">
             <div className="p-7 sm:p-10">
               <div className="flex flex-col justify-between gap-8 sm:flex-row">
                 <div>
@@ -121,7 +124,7 @@ export default async function CollegeDetailPage({ params }: PageProps) {
             </div>
             <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-lg shadow-slate-950/20">
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Courses offered</p>
-              <p className="mt-2 text-xl font-semibold text-white">{college.courses.length} programs</p>
+              <p className="mt-2 text-xl font-semibold text-white">{courses.length} programs</p>
             </div>
             <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-lg shadow-slate-950/20">
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Placement rate</p>
@@ -142,7 +145,7 @@ export default async function CollegeDetailPage({ params }: PageProps) {
                 </div>
 
                 <div className="divide-y divide-slate-800">
-                  {college.courses.map((course) => (
+                  {courses.length > 0 ? courses.map((course) => (
                     <div key={course.id} className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
                       <div>
                         <h3 className="font-semibold text-white">{course.name}</h3>
@@ -152,11 +155,13 @@ export default async function CollegeDetailPage({ params }: PageProps) {
                         ₹{course.fees.toLocaleString('en-IN')}
                       </span>
                     </div>
-                  ))}
+                  )) : (
+                    <p className="py-2 text-sm text-slate-400">Course information is not available.</p>
+                  )}
                 </div>
               </section>
 
-              {college.reviews.length > 0 && (
+              {reviews.length > 0 && (
                 <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6 sm:p-8 shadow-xl shadow-slate-950/20">
                   <div className="mb-6 flex items-center gap-3">
                     <span className="grid h-10 w-10 place-items-center rounded-xl bg-amber-500/10 text-amber-400">
@@ -166,7 +171,7 @@ export default async function CollegeDetailPage({ params }: PageProps) {
                   </div>
 
                   <div className="space-y-5">
-                    {college.reviews.map((review) => (
+                    {reviews.map((review) => (
                       <article key={review.id} className="border-b border-slate-800 pb-5 last:border-0 last:pb-0">
                         <p className="font-semibold text-emerald-400">★ {review.rating.toFixed(1)} / 5</p>
                         <p className="mt-2 text-sm leading-6 text-slate-300">{review.text}</p>
@@ -204,13 +209,13 @@ export default async function CollegeDetailPage({ params }: PageProps) {
                 </section>
               )}
 
-              {college.cutoffs.length > 0 && (
+              {cutoffs.length > 0 && (
                 <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-xl shadow-slate-950/20">
                   <p className="mb-5 text-xs font-bold uppercase tracking-[0.18em] text-emerald-400">
                     Latest cutoffs
                   </p>
                   <dl className="space-y-4 text-sm">
-                    {college.cutoffs.map((cutoff) => (
+                    {cutoffs.map((cutoff) => (
                       <div className="flex justify-between gap-4" key={cutoff.id}>
                         <dt className="text-slate-300">{cutoff.exam}</dt>
                         <dd className="font-bold text-white">Rank {cutoff.rank}</dd>

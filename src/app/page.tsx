@@ -106,7 +106,7 @@ export default function HomePage() {
       if (sort && sort !== 'relevance') params.set('sort', sort);
       if (categories.length) params.set('categories', categories.join(','));
       params.set('page', String(page));
-      params.set('limit', '6');
+      params.set('limit', '100');
 
       const response = await fetch(`/api/colleges?${params.toString()}`);
       const responseData = await response.json();
@@ -116,7 +116,7 @@ export default function HomePage() {
         setPagination(
           responseData.pagination || {
             page,
-            limit: 6,
+            limit: 100,
             total: responseData.data.length,
             totalPages: 1,
           },
